@@ -8,8 +8,7 @@
 struct timespec tp;
 struct timespec tmp;
 
-long freq;
-long check_freq;
+long freq = 1;
 struct timespec time1, time2;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;   
  long get_freq()
@@ -26,7 +25,6 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
  }
  void *getTime(void *args )
 {   
-    long x = *((long*)args);
     clock_gettime(CLOCK_REALTIME,&tp);  
     return NULL;
 }
@@ -43,17 +41,17 @@ void *getFreq(void *args)
     {
     freq = new_freq;
     time1.tv_sec = 0;
-      time1.tv_nsec = freq;
+    time1.tv_nsec = freq;
+    pthread_mutex_unlock(&mutex);
+    return NULL;
     } 
-      pthread_mutex_unlock(&mutex);
-      return NULL;
 
 }
 void *save_time(void *args)
 {
   struct timespec *tpx = (struct timespec *)args;
   //save time
-  if(tmp.tv_sec != tpx->tv_sec | tmp.tv_nsec != tpx->tv_nsec)
+  if(tmp.tv_nsec != tpx->tv_nsec | tmp.tv_sec != tpx->tv_sec)
   {
     FILE *file;
     file = fopen("time_and_interval.txt","a+");
@@ -66,7 +64,7 @@ void *save_time(void *args)
       }
     else 
       {
-        diff_nsec = tmp.tv_nsec - tpx->tv_nsec;
+        diff_nsec = 1000000000 + tpx->tv_nsec - tmp.tv_nsec ;
         diff_sec = diff_sec - 1;
       }
     fprintf(file,"\n%ld.%09ld\n%ld.%09ld",tpx->tv_sec,tpx->tv_nsec,diff_sec,diff_nsec);  
@@ -83,8 +81,7 @@ void *save_time(void *args)
 
 int main(int argc, char const *argv[])
 {
-    FILE *fp;
-    freq = get_freq();
+    
         pthread_t SAMPLE;
         pthread_t INPUT;
         pthread_t LOGGING;
@@ -94,22 +91,23 @@ int main(int argc, char const *argv[])
 
       tmp.tv_sec = 0;
       tmp.tv_nsec = 0;   
-       pthread_mutex_init(&mutex, NULL);      
+       pthread_mutex_init(&mutex, NULL); 
+   
       while(1)
         {
 
         if(nanosleep(&time1 , &time2) < 0 )   
-      {
+            {
         printf("Nano sleep system call failed \n");
         return -1;
       }
-    else
+        else
           { 
-            i = pthread_create(&INPUT,NULL,getFreq,&check_freq);
-            s = pthread_create(&SAMPLE, NULL, getTime,&freq);
-            l = pthread_create(&LOGGING,NULL,save_time,&tp);
-            pthread_join(INPUT,NULL);
-            pthread_join(SAMPLE,NULL);
+        i = pthread_create(&INPUT,NULL,getFreq,NULL);
+        s = pthread_create(&SAMPLE, NULL, getTime,NULL);
+        l = pthread_create(&LOGGING,NULL,save_time,&tp);      
+        pthread_join(INPUT,NULL);
+        pthread_join(SAMPLE,NULL);
         pthread_join(LOGGING,NULL);
         pthread_mutex_destroy(&mutex);
       }
