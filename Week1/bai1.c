@@ -14,13 +14,11 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;   
  void *getTime(void *args )
 {   
-
+      clock_gettime(CLOCK_REALTIME,&request1);  
   while(check_loop == 1) 
   {      
       clock_gettime(CLOCK_REALTIME,&tp);  
       printf("\n%ld.%09ld",tp.tv_sec,tp.tv_nsec); 
-      request1.tv_nsec=tp.tv_nsec;
-      request1.tv_sec=tp.tv_sec; 
       long temp;
         if(request1.tv_nsec + freq > 1000000000)
         {
@@ -33,7 +31,7 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
               }
               else
               {
-                request1.tv_nsec+=temp-1000000000 + freq;
+                request1.tv_nsec+=temp-1000000000+ freq;
                  if(clock_nanosleep(CLOCK_REALTIME,TIMER_ABSTIME, &request1,NULL) != 0)
                   {
                       check_loop = 0;
@@ -87,7 +85,7 @@ void *save_time(void *args)
   while(1)
   {
     FILE *file;
-    file = fopen("freq_1000000.txt","a+");
+    file = fopen("freq_check.txt","a+");
     long diff_sec = ((long) tp.tv_sec) - tmp.tv_sec ;
     long diff_nsec;
     if(tmp.tv_nsec != tp.tv_nsec || tmp.tv_sec != tp.tv_sec)
