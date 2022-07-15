@@ -18,7 +18,6 @@ pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
   while(check_loop == 1) 
   {      
       clock_gettime(CLOCK_REALTIME,&tp);  
-      printf("\n%ld.%09ld",tp.tv_sec,tp.tv_nsec); 
       long temp;
         if(request1.tv_nsec + freq > 1000000000)
         {
@@ -85,7 +84,7 @@ void *save_time(void *args)
   while(1)
   {
     FILE *file;
-    file = fopen("freq_check.txt","a+");
+    file = fopen("freq_1000000.txt","a+");
     long diff_sec = ((long) tp.tv_sec) - tmp.tv_sec ;
     long diff_nsec;
     if(tmp.tv_nsec != tp.tv_nsec || tmp.tv_sec != tp.tv_sec)
