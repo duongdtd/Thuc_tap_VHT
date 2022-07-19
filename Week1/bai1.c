@@ -17,23 +17,12 @@ void *getTime(void *args)
     while (check_loop == 1)
     {
         clock_gettime(CLOCK_REALTIME, &tp);
-        if (request1.tv_nsec + freq > 1000000000)
-        {
-            long temp = request1.tv_nsec;
-            request1.tv_sec += 1;
-            request1.tv_nsec = temp + freq - 1000000000;
-            if (clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &request1, NULL) != 0)
-            {
-                check_loop = 0;
-            }
-            else
-            {
-                check_loop = 1;
-            }
-        }
-        else
-        {
             request1.tv_nsec += freq;
+            if(request1.tv_nsec > 1000000000)
+            {
+              request1.tv_sec +=1;
+              request1.tv_nsec -= 1000000000;
+            }
             if (clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &request1, NULL) != 0)
             {
                 check_loop = 0;
@@ -42,7 +31,7 @@ void *getTime(void *args)
             {
                 check_loop = 1;
             }
-        }
+
     }
 }
 void *getFreq(void *args)
